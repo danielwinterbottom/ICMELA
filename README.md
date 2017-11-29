@@ -18,3 +18,6 @@ build
 ```
 scram b -j8
 ```
+
+## MELA Documentation
+MELA manual: http://hroskes.web.cern.ch/hroskes/JHUGen/manJHUGenerator.pdf
