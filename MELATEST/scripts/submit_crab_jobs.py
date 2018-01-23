@@ -1,5 +1,4 @@
-#python scripts/submit_crab_jobs.py --folder=/vols/cms/dw515/Offline/output/SM/Nov24_SVFit/ --dcache_dir=/store/user/dwinterb/SVFit_Nov24
-
+#python scripts/submit_crab_jobs.py --folder=/vols/cms/dw515/Offline/output/SM/Jan22_MELA/ --dcache_dir=/store/user/dwinterb/Jan22_MELA/ --copy
 
 import sys
 import os
@@ -26,6 +25,7 @@ if not options.folder:
 
 
 subdirs = ['','TSCALE_DOWN','TSCALE_UP','TSCALE0PI_UP','TSCALE0PI_DOWN','TSCALE1PI_UP','TSCALE1PI_DOWN','TSCALE3PRONG_UP','TSCALE3PRONG_DOWN','EFAKE0PI_UP','EFAKE0PI_DOWN', 'EFAKE1PI_UP', 'EFAKE1PI_DOWN','MUFAKE0PI_UP','MUFAKE0PI_DOWN','MUFAKE1PI_UP','MUFAKE1PI_DOWN','METUNCL_UP','METUNCL_DOWN','METCL_UP','METCL_DOWN']
+subdirs=['']
 
 
 for subdir in subdirs:

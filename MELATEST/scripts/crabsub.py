@@ -75,7 +75,7 @@ for filename in os.listdir(root) :
     mela_files.add(fullfile)
     outfile = fullfile.replace('input.root','output.root')
     outscript.write('\nif [ $1 -eq %i ]; then\n'%jobs)
-    outscript.write("  ./MELATEST " +os.path.basename(fullfile) + " " + options.file_prefix + '\n')
+    outscript.write("./MELATest " +os.path.basename(fullfile) + " " + options.file_prefix + '\n')
     outscript.write('fi')
 outscript.write(CRAB_POSTFIX)
 outscript.close()

@@ -18,7 +18,7 @@ config.JobType.outputFiles = ['mela_output.tar']
 # config.JobType.maxMemoryMB = args.maxMemory
 
 config.section_('Data')
-config.Data.outputPrimaryDataset = 'SVFit'
+config.Data.outputPrimaryDataset = 'MELA'
 config.Data.splitting = 'EventBased'
 config.Data.unitsPerJob = 1
 config.Data.totalUnits = 1
