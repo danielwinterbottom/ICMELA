@@ -2,12 +2,15 @@
 #include <string>
 #include <stdlib.h>
 #include <stdint.h>
+#include <vector>
 
 #include "TFile.h"
 #include "TTree.h"
+#include "TLorentzVector.h"
 #include "TSystem.h"
 #include "PhysicsTools/FWLite/interface/TFileService.h"
 #include "ZZMatrixElement/MELA/interface/Mela.h"
+
 
 void CalculateProbabilitiesGGH(std::unique_ptr<Mela> const& m_mela, float& probCPEven, float& probCPOdd, float& probCPMix);
 void CalculateProbabilitiesVBF(std::unique_ptr<Mela> const& m_mela, float& probCPEven, float& probCPOdd, float& probCPMix);
@@ -49,8 +52,12 @@ int main(int argc, char* argv[]){
   unsigned event = 0;
   unsigned lumi = 0;
   unsigned run = 0;
-  std::vector<TLorentzVector> jets;
-  TLorentzVector higgs;
+  unsigned n_jets = 0;
+  double Hpx, Hpy, Hpz, HE;
+  std::vector<double> *jpx = 0;
+  std::vector<double> *jpy = 0;
+  std::vector<double> *jpz = 0;
+  std::vector<double> *jE = 0;
   float D0, DCP;
   
   TH1::AddDirectory(kFALSE);
@@ -58,8 +65,15 @@ int main(int argc, char* argv[]){
   itree->SetBranchAddress("event", &event);
   itree->SetBranchAddress("lumi", &lumi);
   itree->SetBranchAddress("run", &run);
-  itree->SetBranchAddress("jets", &jets);
-  itree->SetBranchAddress("higgs", &higgs);
+  itree->SetBranchAddress("n_jets", &n_jets);
+  itree->SetBranchAddress("jpx", &jpx);
+  itree->SetBranchAddress("jpy", &jpy);
+  itree->SetBranchAddress("jpz", &jpz);
+  itree->SetBranchAddress("jE", &jE);
+  itree->SetBranchAddress("Hpx", &Hpx);
+  itree->SetBranchAddress("Hpy", &Hpy);
+  itree->SetBranchAddress("Hpz", &Hpz);
+  itree->SetBranchAddress("HE", &HE);
   
   TFile *output = new TFile(output_file.c_str(),"RECREATE");
   TTree *otree = new TTree("mela","mela");
@@ -70,19 +84,23 @@ int main(int argc, char* argv[]){
   otree->Branch("DCP", &DCP);
   
   std::unique_ptr<Mela> mela = std::unique_ptr<Mela>(new Mela(13.0, 125.0, TVar::SILENT));
-  
+
   for (unsigned i = 0; i < itree->GetEntries(); ++i) {
     itree->GetEntry(i);
     SimpleParticleCollection_t daughters, associated;
   
-    for (unsigned i=0; i<jets.size(); ++i) associated.emplace_back(0,jets[i]);
-    daughters.emplace_back(25, higgs);
-    mela->setInputEvent(&daughters, &associated, nullptr, false); //false tells MELA that this is RECO event
+    for (unsigned j=0; j<n_jets; ++j){
+      associated.emplace_back(0,TLorentzVector((*jpx)[j],(*jpy)[j],(*jpz)[j],(*jE)[j]));
+    }
+    daughters.emplace_back(25, TLorentzVector(Hpx,Hpy,Hpz,HE));
+    mela->setInputEvent(&daughters, &associated, NULL, false); //false tells MELA that this is RECO event
+
     float probCPEven, probCPOdd, probCPMix;
+
     CalculateProbabilitiesGGH(mela, probCPEven, probCPOdd, probCPMix);
     CalculateDiscriminators(probCPEven, probCPOdd, probCPMix, D0, DCP);
     otree->Fill();
-    std::cout << D0 << "    " << DCP << std::endl;
+    //std::cout << "D0 = " << D0 << ", DCP = " << DCP << std::endl;
   }
   mela->resetInputEvent();
   
@@ -90,7 +108,7 @@ int main(int argc, char* argv[]){
   delete otree;
   output->Close();
   delete output;
-
+  
   input->Close();
   delete input;
 
