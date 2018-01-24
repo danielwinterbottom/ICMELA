@@ -29,10 +29,12 @@ parser.add_option("--submit", dest="submit", action='store_true', default=False,
 
 parser.add_option("--verify", dest="verify", action='store_true', default=False,
                   help="Run verification of output, if --submit is also set then only jobs failing verification will be resubmitted.")
-
+parser.add_option("--channels", dest="channels", default='em,et,mt,tt',
+                  help="Comma seperated list of channels to process, other channels will be ignored." % vars())
 
 (options, args) = parser.parse_args()
 
+channels = options.channels.split(',')
 
 if options.wrap: JOBWRAPPER=options.wrap
 if options.sub: 	JOBSUBMIT=options.sub
@@ -47,6 +49,7 @@ filesVerified = 0
 
 for root, dirnames, filenames in os.walk(options.input):
   for filename in fnmatch.filter(filenames, '*mela_*_input.root'):
+    if not any('_'+chan+'_' in filename for chan in channels): continue
     fullfile = os.path.join(root, filename)
     outfile = fullfile.replace('input.root','output.root')
     print 'Found input file: '+fullfile
