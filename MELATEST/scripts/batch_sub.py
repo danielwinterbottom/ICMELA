@@ -31,6 +31,8 @@ parser.add_option("--verify", dest="verify", action='store_true', default=False,
                   help="Run verification of output, if --submit is also set then only jobs failing verification will be resubmitted.")
 parser.add_option("--channels", dest="channels", default='em,et,mt,tt',
                   help="Comma seperated list of channels to process, other channels will be ignored." % vars())
+parser.add_option("--parajobs", dest="parajobs", action='store_true', default=False,
+                  help="Submit jobs parametrically.")
 
 (options, args) = parser.parse_args()
 
@@ -46,6 +48,9 @@ ROOT.FWLiteEnabler.enable()
 filesSeen = 0
 filesVerified = 0
 
+para_out=''
+perJob=10
+calls=0
 
 for root, dirnames, filenames in os.walk(options.input):
   for filename in fnmatch.filter(filenames, '*mela_*_input.root'):
@@ -78,9 +83,24 @@ for root, dirnames, filenames in os.walk(options.input):
         print 'Failed verification, output file not found!'
 
     if submitTask and options.submit:
-      job = fullfile.replace('_input.root','.sh')
-      os.system('%(JOBWRAPPER)s "MELATest %(fullfile)s" %(job)s' % vars())
-      os.system('%(JOBSUBMIT)s %(job)s' % vars())
+      if not options.parajobs:
+        job = fullfile.replace('_input.root','.sh')
+        os.system('%(JOBWRAPPER)s "MELATest %(fullfile)s" %(job)s' % vars())
+        os.system('%(JOBSUBMIT)s %(job)s' % vars())
+      else:
+        if calls % perJob == 0:
+          if calls == 0:
+            para_out+='if [ \$SGE_TASK_ID == %i ]; then \n' % int(calls/perJob+1)
+          else:
+            para_out+='elif [ \$SGE_TASK_ID == %i ]; then \n' % int(calls/perJob+1)
+        para_out+='  MELATest %(fullfile)s \n' % vars()
+        calls+=1
+
+if options.parajobs:
+  para_out+='fi \n'        
+  os.system('%(JOBWRAPPER)s "%(para_out)s" parajob.sh' % vars())
+  os.system("sed -i '/export SCRAM_ARCH/ i\source /vols/grid/cms/setup.sh' parajob.sh") 
+  os.system('qsub -q hep.q -cwd -l h_rt=0:180:0 -t 1-%u:1 parajob.sh' % int((calls-1)/perJob+1))
 
 print 'TOTAL MELA FILES:    '+str(filesSeen)
 print 'VERIFIED MELA FILES: '+str(filesVerified)
