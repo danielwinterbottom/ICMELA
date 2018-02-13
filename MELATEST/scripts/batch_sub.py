@@ -49,8 +49,13 @@ filesSeen = 0
 filesVerified = 0
 
 para_out=''
-perJob=10
+perJob=50
 calls=0
+parajob_name='parajob.sh'
+if options.parajobs:
+  os.system('%(JOBWRAPPER)s "%(para_out)s" %(parajob_name)s' % vars())
+  os.system("sed -i '/export SCRAM_ARCH/ i\source /vols/grid/cms/setup.sh' %s"%parajob_name) 
+
 
 for root, dirnames, filenames in os.walk(options.input):
   for filename in fnmatch.filter(filenames, '*mela_*_input.root'):
@@ -90,17 +95,16 @@ for root, dirnames, filenames in os.walk(options.input):
       else:
         if calls % perJob == 0:
           if calls == 0:
-            para_out+='if [ \$SGE_TASK_ID == %i ]; then \n' % int(calls/perJob+1)
+            para_out='if [ $SGE_TASK_ID == %i ]; then \n' % int(calls/perJob+1)
           else:
-            para_out+='elif [ \$SGE_TASK_ID == %i ]; then \n' % int(calls/perJob+1)
+            with open('%s'%parajob_name, 'a') as file: file.write('%s\n'%para_out)
+            para_out='fi\nif [ $SGE_TASK_ID == %i ]; then \n' % int(calls/perJob+1)
         para_out+='  MELATest %(fullfile)s \n' % vars()
         calls+=1
 
 if options.parajobs:
-  para_out+='fi \n'        
-  os.system('%(JOBWRAPPER)s "%(para_out)s" parajob.sh' % vars())
-  os.system("sed -i '/export SCRAM_ARCH/ i\source /vols/grid/cms/setup.sh' parajob.sh") 
-  os.system('qsub -q hep.q -cwd -l h_rt=0:180:0 -t 1-%u:1 parajob.sh' % int((calls-1)/perJob+1))
+  with open('%s'%parajob_name, 'a') as file: file.write('%s\nfi \n'%para_out)
+  os.system('qsub -q hep.q -cwd -l h_rt=0:180:0 -t 1-%u:1 %s' % (int((calls-1)/perJob+1),parajob_name))
 
 print 'TOTAL MELA FILES:    '+str(filesSeen)
 print 'VERIFIED MELA FILES: '+str(filesVerified)
