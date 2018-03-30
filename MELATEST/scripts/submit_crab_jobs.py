@@ -24,7 +24,7 @@ if not options.folder:
   parser.error('No folder specified')
 
 
-subdirs = ['','TSCALE_DOWN','TSCALE_UP','TSCALE0PI_UP','TSCALE0PI_DOWN','TSCALE1PI_UP','TSCALE1PI_DOWN','TSCALE3PRONG_UP','TSCALE3PRONG_DOWN','EFAKE0PI_UP','EFAKE0PI_DOWN', 'EFAKE1PI_UP', 'EFAKE1PI_DOWN','MUFAKE0PI_UP','MUFAKE0PI_DOWN','MUFAKE1PI_UP','MUFAKE1PI_DOWN','METUNCL_UP','METUNCL_DOWN','METCL_UP','METCL_DOWN','MUSCALE_UP','MUSCALE_DOWN','ESCALE_UP','ESCALE_DOWN']
+subdirs = ['','TSCALE_DOWN','TSCALE_UP','TSCALE0PI_UP','TSCALE0PI_DOWN','TSCALE1PI_UP','TSCALE1PI_DOWN','TSCALE3PRONG_UP','TSCALE3PRONG_DOWN','EFAKE0PI_UP','EFAKE0PI_DOWN', 'EFAKE1PI_UP', 'EFAKE1PI_DOWN','MUFAKE0PI_UP','MUFAKE0PI_DOWN','MUFAKE1PI_UP','MUFAKE1PI_DOWN','METUNCL_UP','METUNCL_DOWN','METCL_UP','METCL_DOWN','MUSCALE_UP','MUSCALE_DOWN','ESCALE_UP','ESCALE_DOWN', 'JESCENT_DOWN', 'JESCENT_UP', 'JESFULL_DOWN', 'JESFULL_UP', 'JESHF_DOWN', 'JESHF_UP', 'JESRBAL_DOWN', 'JESRBAL_UP']
 
 
 for subdir in subdirs:
@@ -44,27 +44,29 @@ for subdir in subdirs:
       os.system('ls %s/*.root | grep -v _em_ | xargs rm' % (folder))
     if 'TSCALE' in subdir and 'TSCALE_' not in subdir:
       os.system('ls %s/*.root | grep _em_ | xargs rm' % (folder))
-  
-    # then copy the files over to the dcache
-    print 'Copying files to dcache..'
-    os.system('python scripts/copy_mela_input_files_to_dcache.py -i %s -d %s --checkExists' % (folder,dcache_dir)) 
-  
-  # check if all the inputs are on the dcache before submitting
-  try: check_dcache = subprocess.check_output("xrd gfe02.grid.hep.ph.ic.ac.uk:1097 ls %s | grep input | grep .root" % dcache_dir, shell=True).split('\n')
-  except: check_dcache = []
-  try: check_dir = subprocess.check_output("ls %s/ | grep input.root" % folder, shell=True).split('\n')
-  except: check_dir = []
-  check_dir = [x for x in check_dir if '.root' in x and 'input' in x]
-  check_dcache = [x for x in check_dcache if '.root' in x and 'input' in x]
 
-  print  len(check_dcache), len(check_dir) 
-  if len(check_dcache) != len(check_dir): 
-    print subdir
-    print "dcache and directory do not have the same number of input files, not submtting jobs"
-    continue
-
-  print 'Submitting jobs..'
-  dcache_dir = 'root://gfe02.grid.hep.ph.ic.ac.uk:1097/%s/%s/' % (options.dcache_dir,subdir)
-  name = '%s%s' % (CRAB,subdir)
-  submit_command = './scripts/crabsub.py -i %s --name %s --area %s --file_prefix %s' % (folder,name,CRAB,dcache_dir)
-  os.system(submit_command)
+# currently grid jobs don't work so we only need to do the first step i.e delete the outputs that aren't needed
+  
+#    # then copy the files over to the dcache
+#    print 'Copying files to dcache..'
+#    os.system('python scripts/copy_mela_input_files_to_dcache.py -i %s -d %s --checkExists' % (folder,dcache_dir)) 
+#  
+#  # check if all the inputs are on the dcache before submitting
+#  try: check_dcache = subprocess.check_output("xrd gfe02.grid.hep.ph.ic.ac.uk:1097 ls %s | grep input | grep .root" % dcache_dir, shell=True).split('\n')
+#  except: check_dcache = []
+#  try: check_dir = subprocess.check_output("ls %s/ | grep input.root" % folder, shell=True).split('\n')
+#  except: check_dir = []
+#  check_dir = [x for x in check_dir if '.root' in x and 'input' in x]
+#  check_dcache = [x for x in check_dcache if '.root' in x and 'input' in x]
+#
+#  print  len(check_dcache), len(check_dir) 
+#  if len(check_dcache) != len(check_dir): 
+#    print subdir
+#    print "dcache and directory do not have the same number of input files, not submtting jobs"
+#    continue
+#
+#  print 'Submitting jobs..'
+#  dcache_dir = 'root://gfe02.grid.hep.ph.ic.ac.uk:1097/%s/%s/' % (options.dcache_dir,subdir)
+#  name = '%s%s' % (CRAB,subdir)
+#  submit_command = './scripts/crabsub.py -i %s --name %s --area %s --file_prefix %s' % (folder,name,CRAB,dcache_dir)
+#  os.system(submit_command)
