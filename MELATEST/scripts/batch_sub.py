@@ -51,7 +51,7 @@ filesVerified = 0
 para_out=''
 perJob=50
 calls=0
-parajob_name='parajob.sh'
+parajob_name='%s/parajob.sh' % options.input
 if options.parajobs:
   os.system('%(JOBWRAPPER)s "%(para_out)s" %(parajob_name)s' % vars())
   os.system("sed -i '/export SCRAM_ARCH/ i\source /vols/grid/cms/setup.sh' %s"%parajob_name) 
@@ -87,7 +87,7 @@ for root, dirnames, filenames in os.walk(options.input):
       else:
         print 'Failed verification, output file not found!'
 
-    if submitTask and options.submit:
+    if submitTask and (options.submit or options.parajobs):
       if not options.parajobs:
         job = fullfile.replace('_input.root','.sh')
         os.system('%(JOBWRAPPER)s "MELATest %(fullfile)s" %(job)s' % vars())
@@ -104,7 +104,7 @@ for root, dirnames, filenames in os.walk(options.input):
 
 if options.parajobs:
   with open('%s'%parajob_name, 'a') as file: file.write('%s\nfi \n'%para_out)
-  os.system('qsub -q hep.q -cwd -l h_rt=0:180:0 -t 1-%u:1 %s' % (int((calls-1)/perJob+1),parajob_name))
+  if options.submit: os.system('qsub -q hep.q -cwd -l h_rt=0:180:0 -t 1-%u:1 %s' % (int((calls-1)/perJob+1),parajob_name))
 
 print 'TOTAL MELA FILES:    '+str(filesSeen)
 print 'VERIFIED MELA FILES: '+str(filesVerified)

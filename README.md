@@ -40,7 +40,16 @@ Can then check on the status of jobs with the standard crab commands, once the j
 submit as batch jobs:
 ``
 cd ICMELA/MELATEST
-./scripts/batch_sub.py -i /vols/cms/dw515/Offline/output/SM/Jan22_MELA/ --submit --jobsub='./scripts/submit_ic_batch_job.sh "hep.q -l h_rt=0:180:0"'
+./scripts/batch_sub.py -i /vols/cms/dw515/Offline/output/SM/Jan22_MELA/ --submit --jobsub='./scripts/submit_ic_batch_job.sh "hep.q -l h_rt=0:180:0"' --parajobs
+``
+
+or to submit batch jobs for multiple systematic files use:
+``
+cd ICMELA/MELATEST
+dirs=('' 'TSCALE_UP' 'TSCALE_DOWN' 'TSCALE0PI_UP' 'TSCALE0PI_DOWN' 'TSCALE1PI_UP' 'TSCALE1PI_DOWN' 'TSCALE3PRONG_UP' 'TSCALE3PRONG_DOWN' 'EFAKE0PI_UP' 'EFAKE0PI_DOWN' 'EFAKE1PI_UP' 'EFAKE1PI_DOWN' 'MUFAKE0PI_UP' 'MUFAKE0PI_DOWN' 'MUFAKE1PI_UP' 'MUFAKE1PI_DOWN' 'METUNCL_UP' 'METUNCL_DOWN' 'METCL_UP' 'METCL_DOWN' 'MUSCALE_UP' 'MUSCALE_DOWN' 'ESCALE_UP' 'ESCALE_DOWN')
+
+for i in "${dirs[@]}"; do ./scripts/batch_sub.py -i /vols/cms/dw515/Offline/output/SM/Jan22_MELA/$i/ --submit --jobsub='./scripts/submit_ic_batch_job.sh "hep.q -l h_rt=0:180:0"' --parajobs; done
+
 ``
 ## Alternative instructions which tend to be quicker
 !grid submissions currently not working!
@@ -49,8 +58,9 @@ copy mela inputs to batch using:
 ./scripts/copy_to_dcache.sh path/to/mela/inputs path/to/dcache/dir 1 job_name 
 ```
 or if running also for the systematic shifted inputs do:
+
 ```
-dirs=('' 'TSCALE_UP' 'TSCALE_DOWN' 'TSCALE0PI_UP' 'TSCALE0PI_DOWN' 'TSCALE1PI_UP' 'TSCALE1PI_DOWN' 'TSCALE3PRONG_UP' 'TSCALE3PRONG_DOWN' 'EFAKE0PI_UP' 'EFAKE0PI_DOWN' 'EFAKE1PI_UP' 'EFAKE1PI_DOWN' 'MUFAKE0PI_UP' 'MUFAKE0PI_DOWN' 'MUFAKE1PI_UP' 'MUFAKE1PI_DOWN' 'METUNCL_UP' 'METUNCL_DOWN' 'METCL_UP' 'METCL_DOWN')
+dirs=('' 'TSCALE_UP' 'TSCALE_DOWN' 'TSCALE0PI_UP' 'TSCALE0PI_DOWN' 'TSCALE1PI_UP' 'TSCALE1PI_DOWN' 'TSCALE3PRONG_UP' 'TSCALE3PRONG_DOWN' 'EFAKE0PI_UP' 'EFAKE0PI_DOWN' 'EFAKE1PI_UP' 'EFAKE1PI_DOWN' 'MUFAKE0PI_UP' 'MUFAKE0PI_DOWN' 'MUFAKE1PI_UP' 'MUFAKE1PI_DOWN' 'METUNCL_UP' 'METUNCL_DOWN' 'METCL_UP' 'METCL_DOWN' 'MUSCALE_UP' 'MUSCALE_DOWN' 'ESCALE_UP' 'ESCALE_DOWN')
 
 for i in "${dirs[@]}"; do ./scripts/copy_to_dcache.sh /path/to/mela/inputs/$i path/to/dcache/dir/$i 1 $i; done
 ```
